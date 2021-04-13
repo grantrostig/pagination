@@ -6,6 +6,8 @@
 #include <vector>
 #include <variant>
 #include <cassert>
+#include <sstream>
+#include <ostream>
 using 				std::cout, std::cin, std::cerr;
 using Character 		= char;				// should be internationalized
 using Word 				= std::string;  	// = Character, need struct with: "is_hypthenateable" or { int offset_of_hyphen_insertion_for_print //if > 0 }
@@ -35,7 +37,8 @@ public:
 
 class OutPhrase {				// a Phrase to be printed to the console for the user to read.
 public:
-    Phrase 			content_desired {};
+    std::string 	content_desired {};
+    //Phrase 		content_desired {};
     //Phrase 		content_min 		{};		// the least we can work with in bad situations.
     bool 			is_seen 		{false};  // has been seen by user on console. 			assert(is_printed == true && is_acknowledged == true);
     bool 			is_acknowledged {false};  // has been printed to console, not paper. 	assert(is_printed == true);
@@ -58,22 +61,32 @@ public:
 
 class ComputerDisplay {
 public:
-    PaginationSize 	capactity 	{};
-    PaginationSize 	current  	{0,0};  // space currently used on the user visible part of the console. this might be several touples using desired or min content sizes.
+    ScreenSize 	capactity 	{};
+    ScreenSize 	current  	{0,0};  // space currently used on the user visible part of the console. this might be several touples using desired or min content sizes.
 };
 
+void display_print( ComputerDisplay display, DisplayInfoUnit display_info ) {
+   auto v = display_info.out_phrase.content_desired;
+   std::cout << v;
+}
+
 int main() {
-    OutPhrase 		out_1 		{{{"Your bank balance is: $50."}, {0,1} }};
+    //OutPhrase 		out_1 		{{{"Your bank balance is: $50."}, {0,1} }};
+    OutPhrase 		out_1 		{"Your bank balance is: $50."};
     PaginIOPhrase 	pagin_1 	{
         {{"Press [ENTER] to continue"}, {30,1}},
         {{"more..."}, 					{7,0}},
         {{"$$$  "}, 					{5,0}},
         {{"$  "}, 					    {3,0}}
     };
-    DisplayInfoUnit output_unit {
-        out_1,
-        pagin_1
-    };
+    DisplayInfoUnit output_unit { out_1, pagin_1 };
     ComputerDisplay display 	{};
+
+    std::ostringstream oss {};
+    oss << "my text, followed by my number: " << 42.0 << std::endl;
+    output_unit.out_phrase.content_desired = oss.str().c_str();
+
+    display_print( display, output_unit );
+
     cout << "###\n";
 }
