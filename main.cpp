@@ -1,7 +1,8 @@
 /* pagination
  * to allow a user to paginate console output, similar to how Unix "more" does it.
  * author Grant Rostig
- * under the: un-license */
+ * under the: un-license
+ */
 #include <iostream>
 #include <vector>
 #include <variant>
@@ -37,20 +38,25 @@ public:
 
 class OutPhrase {				// a Phrase to be printed to the console for the user to read.
 public:
-    std::string 	content_desired {};
+    std::string 	content_desired {};		// Content of what we say to the user, as we notify them of more output coming from their prior request.
+    std::string 	content_min 	{};		// the least we can work with in bad situations.
     //Phrase 		content_desired {};
-    //Phrase 		content_min 		{};		// the least we can work with in bad situations.
+    //Phrase 		content_min 	{};		// the least we can work with in bad situations.
     bool 			is_seen 		{false};  // has been seen by user on console. 			assert(is_printed == true && is_acknowledged == true);
     bool 			is_acknowledged {false};  // has been printed to console, not paper. 	assert(is_printed == true);
     bool 			is_printed 		{false};  // has been printed to console, not paper.
 };
 
-class PaginIOPhrase {				// Pagination prompting details that may be needed/used depending on the room on the console.
+class PaginIOPhrase {			// Pagination prompting details that may be needed/used depending on the room on the console.
 public:
-    Phrase 			content_desired {};		// Content of what we say to the user, as we notify them of more output coming from their prior request.
-    Phrase 			content_min 	{};		// the least we can work with in bad situations.
-    Phrase 			prompt_desired 	{};		// prompt is like what we seen at bash shell, like: "$ X", where X is the blinking cursor.
-    Phrase 			prompt_min 		{}; 	// probably not needed.
+    std::string 	content_desired {};		// Content of what we say to the user, as we notify them of more output coming from their prior request.
+    std::string 	content_min 	{};		// the least we can work with in bad situations.
+    std::string 	prompt_desired 	{};		// prompt is like what we seen at bash shell, like: "$ X", where X is the blinking cursor.
+    std::string 	prompt_min 		{}; 	// probably not needed.
+    //Phrase 		content_desired {};		// Content of what we say to the user, as we notify them of more output coming from their prior request.
+    //Phrase	 	content_min 	{};		// the least we can work with in bad situations.
+    //Phrase 		prompt_desired 	{};		// prompt is like what we seen at bash shell, like: "$ X", where X is the blinking cursor.
+    //Phrase 		prompt_min 		{}; 	// probably not needed.
 };
 
 class DisplayInfoUnit { // std::assert( out_phrase.size() > 0 ); // represents a packaged OutPhrase for use by the paginator.
@@ -65,28 +71,47 @@ public:
     ScreenSize 	current  	{0,0};  // space currently used on the user visible part of the console. this might be several touples using desired or min content sizes.
 };
 
-void display_print( ComputerDisplay display, DisplayInfoUnit display_info ) {
-   auto v = display_info.out_phrase.content_desired;
-   std::cout << v;
-}
+class Paginator {
+public:
+    ComputerDisplay display;
+    //void static display_print( ComputerDisplay display, DisplayInfoUnit display_info ) {  // todo:?? how is this different than next line? advantages?
+    void display_print( ComputerDisplay display, DisplayInfoUnit display_info ) {
+        auto v = display_info.out_phrase.content_desired;
+        std::cout << v;
+    }
+};
 
 int main() {
+    ComputerDisplay display 		{};
+    Paginator 		paginator 		{ display };
+
     //OutPhrase 		out_1 		{{{"Your bank balance is: $50."}, {0,1} }};
-    OutPhrase 		out_1 		{"Your bank balance is: $50."};
-    PaginIOPhrase 	pagin_1 	{
-        {{"Press [ENTER] to continue"}, {30,1}},
-        {{"more..."}, 					{7,0}},
-        {{"$$$  "}, 					{5,0}},
-        {{"$  "}, 					    {3,0}}
+    //PaginIOPhrase 	pagin_1 	{
+        //{{"Press [ENTER] to continue"}, {30,1}},
+        //{{"more..."}, 					{7,0}},
+        //{{"$$$  "}, 					{5,0}},
+        //{{"$  "}, 					    {3,0}}
+    //};
+
+    OutPhrase 		out_1 			{"Your bank balance is: $50."};
+    PaginIOPhrase 	pagin_1 		{
+        {"Press [ENTER] to continue" },
+        {"more..."},
+        {">$>  "},
+        {"$  "}
     };
-    DisplayInfoUnit output_unit { out_1, pagin_1 };
-    ComputerDisplay display 	{};
+    DisplayInfoUnit output_unit 	{ out_1, pagin_1 };
 
     std::ostringstream oss {};
-    oss << "my text, followed by my number: " << 42.0 << std::endl;
-    output_unit.out_phrase.content_desired = oss.str().c_str();
 
-    display_print( display, output_unit );
+    oss << "my text, followed by my number: " << 42.0 << std::endl;
+    output_unit.out_phrase.content_desired = (oss).str().c_str();
+
+    //output_unit.out_phrase.content_desired = ( oss << "my text, followed by my number: " << 42.0 << std::endl ).str().c_str();
+    // todo:?? above line error: ‘std::basic_ostream<char>::__ostream_type’ {aka ‘class std::basic_ostream<char>’} has no member named ‘str’
+
+    // Paginator::display_print( display, output_unit );  todo:?? function without an object argument compile error?
+    paginator.display_print( display, output_unit );
 
     cout << "###\n";
 }
