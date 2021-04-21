@@ -5,6 +5,7 @@
  */
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <variant>
 #include <cassert>
 #include <sstream>
@@ -72,18 +73,29 @@ public:
 };
 
 class Paginator {
+private:
+    static ComputerDisplay 					display ;
+    static std::queue< DisplayInfoUnit > 	history;
 public:
-    ComputerDisplay display;
+    //static ComputerDisplay 				display {};  // todo:?? compile error
+    //static std::queue< DisplayInfoUnit > 	history;
     //void static display_print( ComputerDisplay display, DisplayInfoUnit display_info ) {  // todo:?? how is this different than next line? advantages?
     void display_print( ComputerDisplay display, DisplayInfoUnit display_info ) {
+        history.push( display_info );
         auto v = display_info.out_phrase.content_desired;
         std::cout << v;
     }
 };
+ComputerDisplay Paginator::display {};  //  this is a DEFINITION. todo: What does this line do? In globla space?  In main()?
+// type... Paginator::history { Paginator::display };
 
 int main() {
-    ComputerDisplay display 		{};
-    Paginator 		paginator 		{ display };
+
+    ComputerDisplay display   {};
+    Paginator 		paginator {};
+    //ComputerDisplay Paginator::display {};  // todo: What does this line do? In globla space?  In main()?
+    //Paginator 		paginator 		{ display };
+    //Paginator 		paginator 		{};
 
     //OutPhrase 		out_1 		{{{"Your bank balance is: $50."}, {0,1} }};
     //PaginIOPhrase 	pagin_1 	{
