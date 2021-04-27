@@ -10,6 +10,7 @@
 #include <cassert>
 #include <sstream>
 #include <ostream>
+#include <algorithm>
 using 				std::cout, std::cin, std::cerr;
 using Character 		= char;				// should be internationalized
 using Word 				= std::string;  	// = Character, need struct with: "is_hypthenateable" or { int offset_of_hyphen_insertion_for_print //if > 0 }
@@ -72,38 +73,76 @@ public:
     ScreenSize 	current  	{0,0};  // space currently used on the user visible part of the console. this might be several touples using desired or min content sizes.
 };
 
+using PaginatorHistory = std::deque< DisplayInfoUnit >;
+// Global utility class to control output to the user console and prompt user when screen is full and more data is to be displayed.  Could become a singleton later.
 class Paginator {
-private:
-    static ComputerDisplay 					display ;
-    static std::queue< DisplayInfoUnit > 	history;
 public:
-    //static ComputerDisplay 				display {};  // todo:?? compile error
-    //static std::queue< DisplayInfoUnit > 	history;
-    //void static display_print( ComputerDisplay display, DisplayInfoUnit display_info ) {  // todo:?? how is this different than next line? advantages?
-    void display_print( ComputerDisplay display, DisplayInfoUnit display_info ) {
-        history.push( display_info );
+    static ComputerDisplay 		display;
+    static PaginatorHistory 	history;
+    std::string					user_input {};
+    void 	reset_display() {
+        display = {}; 			// todo: does this load capacity numbers?
+    };
+    void 	prompt_user() {
+        cout<< " CR to continue:";
+        cin >> user_input;
+        reset_display();
+    };
+    bool 	check_prompt( DisplayInfoUnit display_info ) {
+        // in fact instead of 2000 we would search history to calculate space available on screen by looking at history of un-acknowledged current content on screen in this printing transaction.
+        if (  display_info.out_phrase.content_desired.length()
+              + display_info.pagin_IO_phrase.content_desired.length() > 2000 ) {
+            prompt_user();
+            return true;
+        }
+        return false;
+    };
+    void process_display_usage( DisplayInfoUnit display_info ) {
+        bool is_prompted = check_prompt( display_info );
+        if ( is_prompted ) {
+            display_info.out_phrase.is_acknowledged = true;
+            display_info.out_phrase.is_printed = true;
+            display_info.out_phrase.is_seen = true;
+            struct is_ACKed {
+                bool operator()( DisplayInfoUnit const & u) {
+                    return u.out_phrase.is_acknowledged;
+                };
+            };
+            struct mark_ACKed {
+                DisplayInfoUnit operator()( DisplayInfoUnit & u) {
+                    u.out_phrase.is_acknowledged = true;
+                    return u;
+                };
+            };
+            std::transform( history.begin(), std::find_if(history.begin(), history.end(), is_ACKed()),
+                            history.begin(), mark_ACKed() );
+        }
+        history.push_front( display_info );
+    };
+    void 	display_print( DisplayInfoUnit display_info ) {
+        process_display_usage( display_info );
         auto v = display_info.out_phrase.content_desired;
         std::cout << v;
     }
 };
-ComputerDisplay Paginator::display {};  //  this is a DEFINITION. todo: What does this line do? In globla space?  In main()?
-// type... Paginator::history { Paginator::display };
+ComputerDisplay 	Paginator::display { {0,0}, {} };  //  this is a DEFINITION. todo: What does this line do? In globla space?  In main()?
+PaginatorHistory 	Paginator::history {};
 
 int main() {
-
     ComputerDisplay display   {};
     Paginator 		paginator {};
-    //ComputerDisplay Paginator::display {};  // todo: What does this line do? In globla space?  In main()?
-    //Paginator 		paginator 		{ display };
-    //Paginator 		paginator 		{};
+    /*
+    ComputerDisplay Paginator::display {};  // todo: What does this line do? In globla space?  In main()?
+    Paginator 		paginator 		{};
 
-    //OutPhrase 		out_1 		{{{"Your bank balance is: $50."}, {0,1} }};
-    //PaginIOPhrase 	pagin_1 	{
-        //{{"Press [ENTER] to continue"}, {30,1}},
-        //{{"more..."}, 					{7,0}},
-        //{{"$$$  "}, 					{5,0}},
-        //{{"$  "}, 					    {3,0}}
-    //};
+    OutPhrase 		out_1 		{{{"Your bank balance is: $50."}, {0,1} }};
+    PaginIOPhrase 	pagin_1 	{
+        {{"Press [ENTER] to continue"}, {30,1}},
+        {{"more..."}, 					{7,0}},
+        {{"$$$  "}, 					{5,0}},
+        {{"$  "}, 					    {3,0}}
+    };
+    */
 
     OutPhrase 		out_1 			{"Your bank balance is: $50."};
     PaginIOPhrase 	pagin_1 		{
@@ -123,7 +162,7 @@ int main() {
     // todo:?? above line error: ‘std::basic_ostream<char>::__ostream_type’ {aka ‘class std::basic_ostream<char>’} has no member named ‘str’
 
     // Paginator::display_print( display, output_unit );  todo:?? function without an object argument compile error?
-    paginator.display_print( display, output_unit );
+    paginator.display_print( output_unit );
 
     cout << "###\n";
 }
