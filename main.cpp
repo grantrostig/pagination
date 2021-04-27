@@ -129,7 +129,6 @@ ComputerDisplay 	Paginator::display { {0,0}, {} };  //  this is a DEFINITION. to
 PaginatorHistory 	Paginator::history {};
 
 int main() {
-    ComputerDisplay display   {};
     Paginator 		paginator {};
     /*
     ComputerDisplay Paginator::display {};  // todo: What does this line do? In globla space?  In main()?
@@ -143,26 +142,19 @@ int main() {
         {{"$  "}, 					    {3,0}}
     };
     */
-
     OutPhrase 		out_1 			{"Your bank balance is: $50."};
-    PaginIOPhrase 	pagin_1 		{
-        {"Press [ENTER] to continue" },
+    PaginIOPhrase 	pagin_1 		{{"Press [ENTER] to continue"},
         {"more..."},
         {">$>  "},
         {"$  "}
     };
-    DisplayInfoUnit output_unit 	{ out_1, pagin_1 };
-
-    std::ostringstream oss {};
-
+    DisplayInfoUnit 	output_unit 	{ out_1, pagin_1 };
+    std::ostringstream 	oss 			{};
     oss << "my text, followed by my number: " << 42.0 << std::endl;
     output_unit.out_phrase.content_desired = (oss).str().c_str();
-
     //output_unit.out_phrase.content_desired = ( oss << "my text, followed by my number: " << 42.0 << std::endl ).str().c_str();
     // todo:?? above line error: ‘std::basic_ostream<char>::__ostream_type’ {aka ‘class std::basic_ostream<char>’} has no member named ‘str’
 
-    // Paginator::display_print( display, output_unit );  todo:?? function without an object argument compile error?
     paginator.display_print( output_unit );
-
     cout << "###\n";
 }
