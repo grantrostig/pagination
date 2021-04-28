@@ -90,7 +90,7 @@ public:
     };
     bool 	check_prompt( DisplayInfoUnit display_info ) {
         // in fact instead of 2000 we would search history to calculate space available on screen by looking at history of un-acknowledged current content on screen in this printing transaction.
-        if (  display_info.out_phrase.content_desired.length()
+        if (  current_balance + display_info.out_phrase.content_desired.length()
               + display_info.pagin_IO_phrase.content_desired.length() > 2000 ) {
             prompt_user();
             return true;
@@ -155,6 +155,17 @@ int main() {
     //output_unit.out_phrase.content_desired = ( oss << "my text, followed by my number: " << 42.0 << std::endl ).str().c_str();
     // todo:?? above line error: ‘std::basic_ostream<char>::__ostream_type’ {aka ‘class std::basic_ostream<char>’} has no member named ‘str’
 
-    paginator.display_print( output_unit );
+    auto result = paginator.display_print( output_unit );
+
+    poss << CONST::clear_screen();  // OR poss.clear_screen();
+    LLLLOOOOOPPPPPING: pcout << "my text, followed by my number: " << 42.0 << std::endl;
+    LLLLOOOOOPPPPPING: cout << "my text, followed by my number: " << 42.0 << std::endl;
+    switch (pos.result)
+
+    switch (result )
+    case ok:
+    case partial:
+    case get_out:
+
     cout << "###\n";
 }
