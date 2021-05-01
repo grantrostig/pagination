@@ -7,6 +7,8 @@ SOURCES += \
     main.cpp
 
 HEADERS += \
+    doc/paginator.h \
+    main.h
 
 QMAKE_CXXFLAGS += \
         -std=c++2a 		\
