@@ -24,25 +24,26 @@ using InteractionResult 		= int;			// user intention
 using PhraseContentComponent 	= std::string; //using PhraseContentComponent =  std::variant< std::monostate, Word, Punctuation, WrappingPosition >; // todo: do I really need std::monostate?
 constexpr Punctuation hyphen 	= '-'; 	// should be internationalized
 constexpr Punctuation separator = ' '; 	// just a space, but maybe needed??
-using DisplayRawUnit		    = std::string;  	/// exactly the characters printed to the display within one screen-full or lesser. This object is what the paginator derived from a DisplayInfoUnit.  NOTE this does not support the user changing the display geometry.
+using DisplayRawUnit		    = std::string;  	// exactly the characters printed to the display within one screen-full or lesser. This object is what the paginator derived from a DisplayInfoUnit.  NOTE this does not support the user changing the display geometry.
+using PromptRawUnit		    	= std::string;  	// exactly the characters printed to the display when prompting due to pagination.
 using PaginatorSessionHistory   = std::vector< DisplayRawUnit >;
 
-class ScreenSize {		/// may change between invokations of paginator within a session.
+class ScreenSize {				/// may change between invokations of paginator within a session.
 public:
     size_t num_chars {80};		/// number of printable fixed size characters that fit on one horizontal line.
     size_t num_lines {24};		/// number of printable fixed size text lines that fit on the vertical dimension of a computer screen.
 };
 
-class PaginationDimension {  		/// characteristics of Phrase to be printed.  todo: Should this be a separate class, or a "using =" of Screen Size, since it has same data members? Also possible I might need different classs members.
+class PaginationDimension {  	/// characteristics of Phrase to be printed.  todo: Should this be a separate class, or a "using =" of Screen Size, since it has same data members? Also possible I might need different classs members.
 public:
-    size_t num_chars {};		/// total number of chars in message.  todo: Need to handle multibyte characters.
     size_t lines_min {};		/// programmer must define the minium number of lines the output should take. Generally only one.  Of course it might take more if the output wraps around based on screen x dimension.
+    size_t num_crs 	 {};		/// total number of chars in message.  todo: Need to handle multibyte characters.
 };
 
 class Phrase {					/// a series of words, ie. a sentence, or a paragraph??, or a document??
 public:
     PhraseContentComponent	content 	{}; //std::vector< PhraseContentComponent > content {};
-    PaginationDimension 	dimension	{0,1};
+    PaginationDimension 	dimension	{1,0};
 };
 
 class OutPhrase {				/// a "Phrase" string to be printed to the console for the user to read.
@@ -51,7 +52,7 @@ public:
     Phrase 	content_min 	{};		// the least we can work with in bad situations., as an alternative to the above.  Imagine output to a tiny display screen.
 };
 
-class PaginIOPhrase {			/// Pagination prompting details that may be needed/used depending on the room on the console.
+class PromptPhrase {			/// Pagination prompting details that may be needed/used depending on the room on the console.
 public:
     std::string 	prompt_desired 	{};		// prompt is like what we seen at bash shell, like: "$ X", where X is the blinking cursor.
     std::string 	prompt_min 		{}; 	// probably not needed.
@@ -61,7 +62,7 @@ class DisplayInfoUnit { 		/// represents a packaged OutPhrase for use by the pag
     // std::assert( out_phrase.size() > 0 );
 public:
     OutPhrase 		out_phrase 		{};  /// An text of idea we want to print to console.
-    PaginIOPhrase 	prompt			{};  /// The text that would be displayed if user was prompted for pagination.
+    PromptPhrase 	prompt			{};  /// The text that would be displayed if user was prompted for pagination.
 };
 
 class ComputerDisplay {
@@ -73,12 +74,14 @@ public:
 class Paginator {
 public:
     static ComputerDisplay 						display;
-    //static bool									is_new_session;  // todo: perhaps history.empty() can handle this?
+    //static bool								is_new_session;  	// todo: perhaps history.empty() can handle this?
     static PaginatorSessionHistory 				history;			// Only holds current session.
     static PaginatorSessionHistory::iterator	history_itr;  		// Maybe this should be an index into the container if it is random-access.
-    char									    user_input {};		// What the user replies to a pagination prompt.
+    static PromptRawUnit						prompt_raw_unit; 	// need to preserve between class invocations.
     DisplayRawUnit								display_raw_unit {};
-    void reset_display_counts() { 				/// ready to paginate one page, either the first, or subsequent in a session.
+    char									    user_input 		 {};		// What the user replies to a pagination prompt.
+    /// we are starting a new page on the screen, ready to paginate one page, either the first, or subsequent in a session.
+    void reset_display_counts() {
         display = {}; 							// todo: does this load capacity numbers?
     };
     /// user has seen all the output from a loop and will no longer be able to ask for history.  All output on screen is considered read by user.
@@ -88,14 +91,13 @@ public:
         reset_display_counts();
     };
     InteractionResult prompt_user() {
-        cout<< "::Paginator says ENTER to continue::";
-        //cin >> user_input;
+        cout << prompt_raw_unit;			// cout << "::Paginator says ENTER to continue, or [B]ack::";
         cin.get(user_input);
         reset_display_counts();
-        return 0;  // user input result
+        return 0;  // user input Interaction_result
     };
 
-    using ProcessUnitResult = struct { DisplayRawUnit unit; size_t lines; size_t size_category; }; // todo:?? Is there a better way to handle function return values? Can't seem to do it on the same line, without std::pair? NOTE: I'm also assuming that I will used structured decomposition on invocation. This is probably worse: struct ProcessUnitResult { DisplayRawUnit unit; size_t lines; size_t size_category; };
+    using ProcessUnitResult = struct { DisplayRawUnit unit; size_t lines; size_t chars; size_t size_category; }; // todo:?? Is there a better way to handle function return values? Can't seem to do it on the same line, without std::pair? NOTE: I'm also assuming that I will used structured decomposition on invocation. This is probably worse: struct ProcessUnitResult { DisplayRawUnit unit; size_t lines; size_t size_category; };
     /// determines which content to use depending on capacity of the screen. First cut down content, then cut down prompt lengths. Need to fit at least one of each.
     ProcessUnitResult format_unit( DisplayInfoUnit const & diu ) {
         auto content_desired = diu.out_phrase.content_desired;
@@ -125,24 +127,25 @@ public:
         //return  	 { content_min.content     + prompt_min,     content_min.dimension.lines_min,     3};
         return  	 { content_min.content  + prompt_min,     content_min.dimension.lines_min,     3};
         */
-        return  	 { content_desired.content, content_desired.dimension.lines_min, 3};
+        return  	 { content_desired.content, 1, 40, 3};
     }
     InteractionResult output_display_info_unit ( DisplayInfoUnit display_info_unit ) {
+        InteractionResult interaction_result {0};
         if ( history.empty() )
             reset_display_counts();
-        auto [ unit, lines_min, size_category ] = format_unit( display_info_unit );
-        InteractionResult interaction_result {0};
-        if ( lines_min   > display.capactity.num_lines - display.currently_used.num_lines ||
-             unit.size() > display.capactity.num_chars - display.currently_used.num_chars         )
+
+        auto [ unit, lines, chars, size_category ] = format_unit( display_info_unit );
+        if ( lines       > display.capactity.num_lines - display.currently_used.num_lines ||
+             unit.size() > display.capactity.num_chars - display.currently_used.num_chars    )
                 interaction_result = prompt_user();
-        // act on result, which might include going back to prior page recursively!!
-        if ( interaction_result == 1 )
+        if ( interaction_result == 1 ) // act on result, which might include going back to prior page recursively!!
                 while ( output_prior_unit() ) {};
+
         history.push_back( unit );
         history_itr = history.end();
-        cout << unit; // todo: << std::endl;
-        display.currently_used.num_chars += 1;  // todo: magic number
-        display.currently_used.num_lines += 1;  // todo: magic number
+        cout << unit; 									// todo: << std::endl;
+        display.currently_used.num_chars += chars;
+        display.currently_used.num_lines += lines;
         return interaction_result;
     };
     InteractionResult output_prior_unit() {
@@ -158,14 +161,16 @@ public:
     }
 };
 
-ComputerDisplay 					Paginator::display 		{};  //  this is a DEFINITION, required here for a static in a class only?
+ComputerDisplay 					Paginator::display 			{};  //  this is a DEFINITION, required here for a static in a class only?
+PromptRawUnit						Paginator::prompt_raw_unit  {}; // need to preserve between class invocations.
 //bool 								Paginator::is_new_session {true};
 PaginatorSessionHistory 			Paginator::history 		{};
 PaginatorSessionHistory::iterator	Paginator::history_itr 	{Paginator::history.end()};
 
 int main() {
-    Paginator 		paginator {};
-    /*
+    Paginator 			paginator {};
+    InteractionResult 	result;
+    /* Ignore
     ComputerDisplay Paginator::display {};  // todo: What does this line do? In globla space?  In main()?
     Paginator 		paginator 		{};
 
@@ -177,8 +182,8 @@ int main() {
         {{"$  "}, 					    {3,0}}
     };
     */
-    OutPhrase 		out_1 	{ {"Your bank balance is: $50."} };
-    PaginIOPhrase 	pagin_1 {
+    OutPhrase 			out_1 	{ {"Your bank balance is: $50."} };
+    PromptPhrase 		pagin_1 {
         {"IOPhrase::Press [ENTER] to continue:"},
         {"IOPhrase::more..."},
         //{"IOPhrase::>$>  "},
@@ -186,20 +191,22 @@ int main() {
     };
     DisplayInfoUnit 	display_info_unit 	{ out_1, pagin_1 };
 
-    InteractionResult result;
     for ( int i = 0; i < 30; ++i ) {
         std::ostringstream oss {};
         oss << "my text, followed by my number: " << i << std::endl;
         display_info_unit.out_phrase.content_desired.content = oss.str();
-        /*
-        display_info_unit.out_phrase.content_desired.content = ( oss << "my text, followed by my number: " << 42.0 << std::endl).rdbuf() ;
-        display_info_unit.out_phrase.content_desired.content = ( oss << "my text, followed by my number: " << 42.0 << std::endl ).str().c_str();
-         todo:?? above line error: ‘std::basic_ostream<char>::__ostream_type’ {aka ‘class std::basic_ostream<char>’} has no member named ‘str’
+
+        // todo:?? above works, so why can't I do something these lines, compile error:
+        //display_info_unit.out_phrase.content_desired.content = ( oss << "my text, followed by my number: " << 42.0 << std::endl).rdbuf() ;
+        //display_info_unit.out_phrase.content_desired.content = ( oss << "my text, followed by my number: " << 42.0 << std::endl ).str();
+
+        /* this is how I would like to replace above lines is "pcout".
 
         pcout 			<< clear_screen();  // OR pcout.clear_screen();
         pcout 			<< "my text, followed by my number: " << 42.0 << std::endl;
         switch (pcout.result)  // OR // next line
         */
+
         result = paginator.output_display_info_unit( display_info_unit );
     }
     switch (result ) {
