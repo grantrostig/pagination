@@ -1,5 +1,5 @@
 /* pagination
- * to allow the programmer to paginate console output, similar to how Unix "cat <> | more" does it.
+ * to allow the programmer to paginate console output, similar to how Unix "cat /etc/passwd | more" does it.
  * author Grant Rostig
  * under the: un-license
  */
@@ -94,16 +94,19 @@ public:
         reset_display_counts();
         return 0;  // user input result
     };
+
     using ProcessUnitResult = struct { DisplayRawUnit unit; size_t lines; size_t size_category; }; // todo:?? Is there a better way to handle function return values? Can't seem to do it on the same line, without std::pair? NOTE: I'm also assuming that I will used structured decomposition on invocation. This is probably worse: struct ProcessUnitResult { DisplayRawUnit unit; size_t lines; size_t size_category; };
-                                   /// determines which content to use depending on capacity of the screen. First cut down content, then cut down prompt lengths. Need to fit at least one of each.
+    /// determines which content to use depending on capacity of the screen. First cut down content, then cut down prompt lengths. Need to fit at least one of each.
     ProcessUnitResult format_unit( DisplayInfoUnit const & diu ) {
-        // todo:?? I know below is ugly, any ideas on how to make more attractive?
         auto content_desired = diu.out_phrase.content_desired;
         auto content_min 	 = diu.out_phrase.content_min;
         auto prompt_desired  = diu.prompt.prompt_desired;
         auto prompt_min  	 = diu.prompt.prompt_min;
 
-        /* calculations need to be redone with lines_ceil! */
+        /* PLEASE IGNORE commented code, it requires re-work.
+         * currently I just return a MAGIC number for sizing.
+         * todo: I know below is ugly, any ideas on how to make more attractive?
+         * calculations need to be redone with lines_ceil
         std::div_t p = std::div( 90, 24);
         int lines_ceil = p.quot + ( p.rem == 0 ? 0 : 1);
 
@@ -121,6 +124,8 @@ public:
              return  { content_min.content    , content_min.dimension.lines_min,     2};
         //return  	 { content_min.content     + prompt_min,     content_min.dimension.lines_min,     3};
         return  	 { content_min.content  + prompt_min,     content_min.dimension.lines_min,     3};
+        */
+        return  	 { content_desired.content, content_desired.dimension.lines_min, 3};
     }
     InteractionResult output_display_info_unit ( DisplayInfoUnit display_info_unit ) {
         if ( history.empty() )

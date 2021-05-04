@@ -1,4 +1,5 @@
-#ifdef MAIN_H
+#if defined (junk)  // I wonder what other functions # does??
+//#ifdef MAIN_H
 
 /*
 // 3/ works test comment 3
