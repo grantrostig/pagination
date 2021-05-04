@@ -13,6 +13,7 @@
 #include <cassert>
 #include <sstream>
 #include <ostream>
+#include <ios>
 #include <algorithm>
 #include <cstdlib>
 using std::cout, std::cin, std::cerr;
@@ -71,8 +72,10 @@ public:
     ScreenSize 	currently_used  	{0,0};  /// space currently used on the user visible part of the console. this might be several touples using desired or min content sizes.
 };
 
-class Paginator {
+class Paginator : public std::ostream {
 public:
+    //using std::ostream;					// todo::?? somehow "using" can bring in the methods of another class? what is the type of cout?
+
     static ComputerDisplay 						display;
     //static bool								is_new_session;  	// todo: perhaps history.empty() can handle this?
     static PaginatorSessionHistory 				history;			// Only holds current session.
@@ -91,15 +94,15 @@ public:
         reset_display_counts();
     };
     InteractionResult prompt_user() {
-        cout << prompt_raw_unit;			// cout << "::Paginator says ENTER to continue, or [B]ack::";
+        cout << prompt_raw_unit;
         cin.get(user_input);
         reset_display_counts();
         return 0;  // user input Interaction_result
     };
 
-    using ProcessUnitResult = struct { DisplayRawUnit unit; size_t lines; size_t chars; size_t size_category; }; // todo:?? Is there a better way to handle function return values? Can't seem to do it on the same line, without std::pair? NOTE: I'm also assuming that I will used structured decomposition on invocation. This is probably worse: struct ProcessUnitResult { DisplayRawUnit unit; size_t lines; size_t size_category; };
+    using ProcessUnitResult = struct { DisplayRawUnit unit; PromptRawUnit prompt; size_t lines; size_t chars; size_t size_category; }; // todo:?? Is there a better way to handle function return values? Can't seem to do it on the same line, without std::pair? NOTE: I'm also assuming that I will used structured decomposition on invocation. This is probably worse: struct ProcessUnitResult { DisplayRawUnit unit; size_t lines; size_t size_category; };
     /// determines which content to use depending on capacity of the screen. First cut down content, then cut down prompt lengths. Need to fit at least one of each.
-    ProcessUnitResult format_unit( DisplayInfoUnit const & diu ) {
+    ProcessUnitResult process_unit( DisplayInfoUnit const & diu ) const {
         auto content_desired = diu.out_phrase.content_desired;
         auto content_min 	 = diu.out_phrase.content_min;
         auto prompt_desired  = diu.prompt.prompt_desired;
@@ -127,14 +130,15 @@ public:
         //return  	 { content_min.content     + prompt_min,     content_min.dimension.lines_min,     3};
         return  	 { content_min.content  + prompt_min,     content_min.dimension.lines_min,     3};
         */
-        return  	 { content_desired.content, 1, 40, 3};
+        return  	 { content_desired.content, "::Paginator says ENTER to continue, or [B]ack::", 1, 40, 3};
     }
     InteractionResult output_display_info_unit ( DisplayInfoUnit display_info_unit ) {
         InteractionResult interaction_result {0};
         if ( history.empty() )
             reset_display_counts();
 
-        auto [ unit, lines, chars, size_category ] = format_unit( display_info_unit );
+        auto [ unit, prompt, lines, chars, size_category ] = process_unit( display_info_unit );
+        prompt_raw_unit = prompt;
         if ( lines       > display.capactity.num_lines - display.currently_used.num_lines ||
              unit.size() > display.capactity.num_chars - display.currently_used.num_chars    )
                 interaction_result = prompt_user();
