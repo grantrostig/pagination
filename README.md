@@ -11,11 +11,11 @@ Provide functionality to prompt the user then the output within a transaction ex
 If more than one screen has been prompted, during that prompt, 
 the user may reply to the prompt by pressing a key to display the prior screen full of output. The prior two resulting actions shall be handled by the paginator.
 
-At the prompt, the user can also command various actions to be performed by the application program which has called the paginator.  These commands are expressed via return values, and or status fields/bitmaps persisted as part of the paginator, and accessible after it's use.  The return codes might indicate the users desire for one of the following: 
+At the prompt, the user can also command various actions to be performed by the application program which has called the paginator.  These commands are expressed via return values, and or status fields/bitmaps persisted as part of the paginator, and accessible after its use.  The return codes might indicate the users desire for one of the following: 
 1) Ask for help via perhaps the [F1] key, 
 2) terminate the output transaction and return to the place in the program where it was commissioned, 
 3) Terminate the entire application in with functionality to optionally save data, 
-4) Terminate immediately without any prompts and not saving the data (an emergency measure).  
+4) Terminate immediately without any prompts and not save the data (an emergency measure).  
 
 Perhaps the help key functionality should be handled by the paginator?  Of note is that the help text itself may be larger than the screen and so also require pagination!
 
@@ -40,7 +40,7 @@ It would have a fully formatted string passed to it.  It would then paginate the
 This approach would likely require four statements to output one line item, or data field.  
 It would also require member functions to perform the function the separator operators.
 
-II) Inherit or overload from std::ostreams or most likely it's base.  It is possible that the entire 
+II) Inherit or overload from std::ostreams or most likely its base.  It is possible that the entire 
 inheritance hierarchy would need to be duplicated, renamed and compiled rather than some simpler 
 procedure.  Not sure how this would work if at all, in a practical manner, but perhaps 
 somehow the .flush() of the internal output buffer could be used or adapted.
@@ -59,6 +59,6 @@ This is unlikely to be possible, but should be considered.
 
 Implementation:
 
-The code shows some ideas on the data structures that may be used in some capacity.  
-It also gives some hints on possible syntax and usage.  It gives hints on some of the above approaches, 
-where options are commented out.
+The code of this repository is a growing body which illustrates some ideas on the data structures that may be used in some capacity.  
+It gives hints on some of the above alternative design approaches, 
+where some approaches are commented out. It also gives some hints on possible syntax and usage.
