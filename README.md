@@ -1,8 +1,9 @@
 # pagination via a paginator.
 
-a Modern c++ class to control output to console so that data does not scroll past the user.
+A modern c++ class to control output to console so that data does not scroll past the user.
 
 Inspired by more command as in: cat /etc/passwd | more
+
 Anaylsis:
 
 Provide functionality to prompt the user then the output within a transaction exceeds the capacity of the screen of the computer terminal.
@@ -20,7 +21,8 @@ It is preferable to have the user prompted between line items.  In the case wher
 exceeds the total capacity of the screen, a prompt would need to be issued.
 
 There must be some way of designating the beginning, as well as the end of a transaction, to assist pagination.
-It is likely an operation to separate line items, and between data items will also be required.  These are termed: separator operators.  
+It is likely an operation to separate line items, and between data items will also be required.  
+These are termed: separator operators.  
 These operators would also profide for "reset", "clear screen" and "clear to end of screen".
 
 Design:
@@ -30,6 +32,24 @@ It would have a fully formated string passed to it.  It would then paginate the 
 This approach would likely require four statements to output one line item, or data field.  
 It would also require member functions to perform the function the separator operators.
 
-II)
+II) Inherit or overload from std::ostreams or most likely it's base.  It is possible that the entire 
+inheritance hierarchy would need to be duplicated, renamed and compiled rather than some simpler 
+procedure.  Not sure how this would work if at all, in a practical manner, but perhaps 
+somehow the .flush() of the internal output buffer could be used or adapted.
 
+III) Wrapper Class: Create a class that defines all, or many of the operators and manipulators that std::ostream implements.  
+Within that class, perhaps std::cout could be called.
 
+IV) Template Parameter:  Explore and potentionally utilize the ostream<Tchar> approach, where Tchar in a novel class that 
+somehow implements the required functionality.  Or perhaps there is another candidate such as std::traits, or other.
+  
+V) Calling into the base: Directly calling a method near the top of the class hierarchy.  
+The likely target would be the output buffer.
+It is possible that it would be a private or protected data or function member.  
+This is unlikely to be possible, but should be considered.
+
+Implementation:
+
+The code shows some ideas on the data structures that may be used in some capacity.  
+It also gives some hints on possible syntax and usage.  It gives hints on some of the above approaches, 
+where options are commented out.
