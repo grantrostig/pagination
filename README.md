@@ -41,7 +41,8 @@ III) Wrapper Class: Create a class that defines all, or many of the operators an
 Within that class, perhaps std::cout could be called.
 
 IV) Template Parameter:  Explore and potentionally utilize the ostream<Tchar> approach, where Tchar in a novel class that 
-somehow implements the required functionality.  Or perhaps there is another candidate such as std::traits, or other.
+somehow implements the required functionality.  Or perhaps there is another candidate such as std::traits, or other.  
+Perhaps a function object could be passed in?
   
 V) Calling into the base: Directly calling a method near the top of the class hierarchy.  
 The likely target would be the output buffer.
