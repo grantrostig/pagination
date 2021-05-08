@@ -1,6 +1,6 @@
 # pagination via a paginator.
 
-A modern c++ class to control output to the console so that data does not scroll past the user.
+A modern c++ class to control output to the console so that data does not scroll past the user without user interaction.
 
 Inspired by more command as in: cat /etc/passwd | more
 
