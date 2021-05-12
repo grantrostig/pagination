@@ -12,11 +12,11 @@
 #include <variant>
 #include <cassert>
 #include <sstream>
-#include <ostream>
+//#include <ostream>
 #include <ios>
 #include <algorithm>
 #include <cstdlib>
-using std::cout, std::cin, std::cerr;
+using std::cout, std::cin, std::cerr, std::endl;
 using Character 				= char;			// should be internationalized
 using Word 						= std::string;  // = Character, need struct with: "is_hypthenateable" or { int offset_of_hyphen_insertion_for_print //if > 0 }
 using Punctuation				= Character;
@@ -41,7 +41,7 @@ public:
     size_t num_crs 	 {};		/// total number of chars in message.  todo: Need to handle multibyte characters.
 };
 
-class Phrase {					/// a series of words, ie. a sentence, or a paragraph??, or a document??
+class Phrase {					/// a series of words, ie. a sentence, or a paragraph?, or a document?
 public:
     PhraseContentComponent	content 	{}; //std::vector< PhraseContentComponent > content {};
     PaginationDimension 	dimension	{1,0};
@@ -72,7 +72,29 @@ public:
     ScreenSize 	currently_used  	{0,0};  /// space currently used on the user visible part of the console. this might be several touples using desired or min content sizes.
 };
 
-class Paginator : public std::ostream {
+//class Paginator : public std::ostream {
+//NOT DOING: class PaginatorCout2 : public std::ostream {};
+
+class PaginatorCout {
+public:
+    //static std::ostring 	my_cout;
+    static decltype (std::cout) my_cout;
+    PaginatorCout & operator<<( PaginatorCout & r) {
+        //calculate_screen_capacity;
+        //if prompt_user() {}
+        //cout << r.string();
+        //cout << r.int();
+    }
+    PaginatorCout & operator << ( int i) {
+        //return my_cout << to_string(i);
+    }
+    PaginatorCout & operator <<( std::string s) {
+    }
+    void my_clear() {
+    }
+};
+
+class Paginator {
 public:
     //using std::ostream;					// todo::?? somehow "using" can bring in the methods of another class? what is the type of cout?
 
@@ -165,13 +187,23 @@ public:
     }
 };
 
+PaginatorCout 						pcout 						{};
 ComputerDisplay 					Paginator::display 			{};  //  this is a DEFINITION, required here for a static in a class only?
 PromptRawUnit						Paginator::prompt_raw_unit  {}; // need to preserve between class invocations.
 //bool 								Paginator::is_new_session {true};
 PaginatorSessionHistory 			Paginator::history 		{};
 PaginatorSessionHistory::iterator	Paginator::history_itr 	{Paginator::history.end()};
 
+
+std::ostream & operator<< ( std::ostream & os, ComputerDisplay const & cd ) {
+    os << "operator<<:" << cd.capactity.num_chars << ", " << cd.currently_used.num_chars << endl;
+    return os;
+};
+
 int main() {
+    ComputerDisplay cd3;
+    cout << cd3 << std::endl;
+
     Paginator 			paginator {};
     InteractionResult 	result;
     /* Ignore
@@ -197,12 +229,14 @@ int main() {
 
     for ( int i = 0; i < 30; ++i ) {
         std::ostringstream oss {};
+        //auto q3 { oss << "my text, followed by my number: " << i << std::endl} ;
         oss << "my text, followed by my number: " << i << std::endl;
         display_info_unit.out_phrase.content_desired.content = oss.str();
+        //auto q = oss;
 
         // todo:?? above works, so why can't I do something these lines, compile error:
         //display_info_unit.out_phrase.content_desired.content = ( oss << "my text, followed by my number: " << 42.0 << std::endl).rdbuf() ;
-        //display_info_unit.out_phrase.content_desired.content = ( oss << "my text, followed by my number: " << 42.0 << std::endl ).str();
+        //display_info_unit.out_phrase.content_desired.content = ((std::ostringstream)( oss << "my text, followed by my number: " << 42.0 << std::endl )).str();
 
         /* this is how I would like to replace above lines is "pcout".
 
