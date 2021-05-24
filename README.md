@@ -1,4 +1,4 @@
-# output pagination via a paginator.
+# Output pagination via a paginator
 
 A modern c++ class to control output to the console so that data does not scroll past the user without a user approval interaction.
 
@@ -13,7 +13,7 @@ the user may reply to the prompt, by pressing a key to display the prior screen-
 
 At the prompt, the end-user can also reply to command various additional actions to be performed by the application program which has called the paginator.  These end-user intents/commands are communited through return values, and, or through status fields/bitmaps set by the paginator.  The return codes would indicate the user's desire for one of the following: 
 1) Ask for help via perhaps the [F1] key, 
-2) terminate the output transaction and return to the place in the program where it was commissioned, 
+2) Terminate the output transaction and return to the place in the program where it was commissioned, 
 3) Terminate the entire application in with functionality to optionally save data, 
 4) Terminate immediately without any prompts and not save the data (an emergency measure).  
 
@@ -37,11 +37,11 @@ These operators would also provide for "reset", "clear screen" and perhaps "clea
 Design:
 
 I) Simple Class: Seemingly the simplest approach is to create a single large complex class, as a global or a Singleton.
-It would have a fully formatted string passed to it.  It would then paginate the output.  
+It would have a fully formatted string passed to it for output to the end-user.  It would then paginate the output.  
 This approach would likely require four statements just to output one line item, or even just one data field.  
 It would also require member functions to perform the function of separating logical line items, etc.
 
-II) Inherit or overload from std::ostreams or most likely its base.  It is possible that the entire 
+II) Inherit or overload from std::ostream or most likely its base.  It is possible that the entire 
 inheritance hierarchy would need to be duplicated, renamed and compiled rather than some simpler 
 procedure.  Not sure how this would work if at all, in a practical manner, but perhaps 
 somehow the .flush() of the internal output buffer could be used or adapted.
@@ -60,6 +60,6 @@ This is unlikely to be possible, but should be considered.
 
 Implementation:
 
-The code of this repository is a growing body which illustrates some ideas on the data structures that may be used in some capacity.  
-It gives hints on some of the above alternative design approaches, 
+The code of this repository is a growing body which illustrates some ideas about the data structures that may be used in some capacity.  
+It also gives hints on some of the above alternative design approaches, 
 where some approaches are commented out. It also gives some hints on possible syntax and usage.
