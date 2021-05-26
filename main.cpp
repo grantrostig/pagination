@@ -12,7 +12,7 @@
 #include <variant>
 #include <cassert>
 #include <sstream>
-//#include <ostream>
+#include <ostream>
 #include <ios>
 #include <algorithm>
 #include <cstdlib>
@@ -22,58 +22,57 @@ using Word 						= std::string;  // = Character, need struct with: "is_hypthenat
 using Punctuation				= Character;
 using WrappingPosition 			= bool;			// could be any type, I just need a type to be present or not be.  This is added to a Phrase Content Component to denote wrapping.
 using InteractionResult 		= int;			// user intention
+/// End user readable content in user's locale
 using PhraseContentComponent 	= std::string; //using PhraseContentComponent =  std::variant< std::monostate, Word, Punctuation, WrappingPosition >; // todo: do I really need std::monostate?
 constexpr Punctuation hyphen 	= '-'; 	// should be internationalized
 constexpr Punctuation separator = ' '; 	// just a space, but maybe needed??
 using DisplayRawUnit		    = std::string;  	// exactly the characters printed to the display within one screen-full or lesser. This object is what the paginator derived from a DisplayInfoUnit.  NOTE this does not support the user changing the display geometry.
 using PromptRawUnit		    	= std::string;  	// exactly the characters printed to the display when prompting due to pagination.
 using PaginatorSessionHistory   = std::vector< DisplayRawUnit >;
-
-class ScreenSize {				/// may change between invokations of paginator within a session.
+/// may change between invokations of paginator within a session.
+class ScreenSize {
 public:
     size_t num_chars {80};		/// number of printable fixed size characters that fit on one horizontal line.
     size_t num_lines {24};		/// number of printable fixed size text lines that fit on the vertical dimension of a computer screen.
-};
-
-class PaginationDimension {  	/// characteristics of Phrase to be printed.  todo: Should this be a separate class, or a "using =" of Screen Size, since it has same data members? Also possible I might need different classs members.
-public:
-    size_t lines_min {};		/// programmer must define the minium number of lines the output should take. Generally only one.  Of course it might take more if the output wraps around based on screen x dimension.
-    size_t num_crs 	 {};		/// total number of chars in message.  todo: Need to handle multibyte characters.
-};
-
-class Phrase {					/// a series of words, ie. a sentence, or a paragraph?, or a document?
-public:
-    PhraseContentComponent	content 	{}; //std::vector< PhraseContentComponent > content {};
-    PaginationDimension 	dimension	{1,0};
-};
-
-class OutPhrase {				/// a "Phrase" string to be printed to the console for the user to read.
-public:
-    Phrase 	content_desired {};		// Content of what we say to the user, as we notify them of more output coming from their prior request.
-    Phrase 	content_min 	{};		// the least we can work with in bad situations., as an alternative to the above.  Imagine output to a tiny display screen.
-};
-
-class PromptPhrase {			/// Pagination prompting details that may be needed/used depending on the room on the console.
-public:
-    std::string 	prompt_desired 	{};		// prompt is like what we seen at bash shell, like: "$ X", where X is the blinking cursor.
-    std::string 	prompt_min 		{}; 	// probably not needed.
-};
-
-class DisplayInfoUnit { 		/// represents a packaged OutPhrase for use by the paginator.
-    // std::assert( out_phrase.size() > 0 );
-public:
-    OutPhrase 		out_phrase 		{};  /// An text of idea we want to print to console.
-    PromptPhrase 	prompt			{};  /// The text that would be displayed if user was prompted for pagination.
-};
-
-class ComputerDisplay {
+};class
+/// hardware on which the end-user can view text. May also be called: screen, console, window.
+ComputerDisplay {
 public:
     ScreenSize 	capactity 			{};
     ScreenSize 	currently_used  	{0,0};  /// space currently used on the user visible part of the console. this might be several touples using desired or min content sizes.
 };
+/// characteristics of Phrase to be printed.  todo: Should this be a separate class, or a "using =" of Screen Size, since it has same data members? Also possible I might need different classs members.
+class PaginationDimension {
+public:
+    size_t lines_min {};		/// programmer must define the minium number of lines the output should take. Generally only one.  Of course it might take more if the output wraps around based on screen x dimension.
+    size_t num_crs 	 {};		/// total number of chars in message.  todo: Need to handle multibyte characters.
+};
+/// a series of words, ie. a sentence, or a paragraph?, or a document?
+class Phrase {
+public:
+    PhraseContentComponent	content 	{}; 		//std::vector< PhraseContentComponent > content {};
+    PaginationDimension 	dimension	{1,0};
+};
+/// text related to the data of the application, which is to be printed to the console for the user to read.
+class OutPhrase {
+public:
+    Phrase 	content_desired {};		// Content of what we say to the user, as we notify them of more output coming from their prior request.
+    Phrase 	content_min 	{};		// the least we can work with in bad situations., as an alternative to the above.  Imagine output to a tiny display screen.
+};
+/// Prompting details that would be needed/used during Pagination, depending on the quanity of space on the console.
+class PromptPhrase {
+public:
+    std::string 	prompt_desired 	{};		// prompt is like what we seen at bash shell, like: "$ X", where X is the blinking cursor.
+    std::string 	prompt_min 		{}; 	// probably not needed.
+};
+/// packaged text and prompt for use by the paginator.  The goal is to print the OutPhrase, but the PromptPhrase may be need if pagination is required.
+class DisplayInfoUnit {
+    // std::assert( out_phrase.size() > 0 );
+public:
+    OutPhrase 		out_phrase 		{};
+    PromptPhrase 	prompt			{};
+};
 
-//class Paginator : public std::ostream {
-//NOT DOING: class PaginatorCout2 : public std::ostream {};
 
 class PaginatorCout {
 public:
@@ -94,6 +93,7 @@ public:
     }
 };
 
+/// Design alternative I (one), see README file.
 class Paginator {
 public:
     //using std::ostream;					// todo::?? somehow "using" can bring in the methods of another class? what is the type of cout?
@@ -200,7 +200,39 @@ std::ostream & operator<< ( std::ostream & os, ComputerDisplay const & cd ) {
     return os;
 };
 
+template <typename CharT, typename traits, typename T>
+std::basic_ostringstream<CharT,traits>&&
+operator<<( std::basic_ostringstream<CharT,traits> && out, const T& t) {
+  static_cast<std::basic_ostream< CharT, traits > &>(out) << t;
+  return std::move(out);
+}
+
+template <typename S, typename T, class = typename
+            std::enable_if<
+              std::is_base_of<
+                std::basic_ostream< typename S::char_type, typename S::traits_type >
+                ,
+                S
+                                   >::value
+                              >::type
+          >  // https://codereview.stackexchange.com/questions/6094/a-version-of-operator-that-returns-ostringstream-instead-of-ostream
+S&& operator<<( S && out, const T& t) {
+  static_cast<std::basic_ostream< typename S::char_type, typename S::traits_type > &>(out) << t;
+  return std::move(out);
+}
+
+class PaginatorCout2 : public std::ostream {
+};
+
+PaginatorCout2 cout2 {};
+//std::ostream               		cout4;
+//extern std::basic_ostream< char  > cout3;
+std::basic_streambuf< char >*  	my_streambuf_ptr;
+std::basic_ostream< char > 		cout3 { my_streambuf_ptr };
+
 int main() {
+    cout3 << "hello\n";
+
     ComputerDisplay cd3;
     cout << cd3 << std::endl;
 
