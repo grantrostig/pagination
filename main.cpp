@@ -220,22 +220,37 @@ S&& operator<<( S && out, const T& t) {
   static_cast<std::basic_ostream< typename S::char_type, typename S::traits_type > &>(out) << t;
   return std::move(out);
 }
-
 class PaginatorCout2 : public std::ostream {
 };
-
-PaginatorCout2 cout2 {};
+//PaginatorCout2 cout2 {};
 //std::ostream               		cout4;
-//extern std::basic_ostream< char  > cout3;
+//extern std::basic_ostream< char  > cout5;
+//auto my_streambuf_of_type_char_ptr { cout.rdbuf() };
+//std::basic_streambuf< char >*  	my_streambuf_ptr2 { my_streambuf_of_type_char_ptr };
 
 
-auto my_streambuf_of_type_char_ptr { cout.rdbuf() };
-std::basic_streambuf< char >*  	my_streambuf_ptr2 { my_streambuf_of_type_char_ptr };
+
+
+
+
 
 std::basic_streambuf< char >*  	my_streambuf_ptr { cout.rdbuf() };
 std::basic_ostream< char > 		cout3 { my_streambuf_ptr };
 
+//int f( long double & i )
+int f( long double && i )
+{ return i*2; };
+
 int main() {
+    // const long double & i = 6.0;
+    // long double & i = 6.0l;
+    long double x = 7l;
+    // long double & i = x;
+    f(6.0l);
+    long double q;
+    f(i);
+    f(q);
+
     cout3 << "hello\n";
 
     ComputerDisplay cd3;
