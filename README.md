@@ -63,3 +63,5 @@ Implementation:
 The code of this repository is a growing body which illustrates some ideas about the data structures that may be used in some capacity.  
 It also gives hints on some of the above alternative design approaches, 
 where some approaches are commented out. It also gives some hints on possible syntax and usage.
+  
+To be reviewed: http://preserve.mactech.com/articles/mactech/Vol.12/12.09/ModernDebugStr/index.html
