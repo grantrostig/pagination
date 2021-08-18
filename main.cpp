@@ -220,19 +220,52 @@ S&& operator<<( S && out, const T& t) {
   static_cast<std::basic_ostream< typename S::char_type, typename S::traits_type > &>(out) << t;
   return std::move(out);
 }
-class PaginatorCout2 : public std::ostream {
+class Pcout_streambuf : public std::streambuf {
+public:
+   // overflow(int_type __c = traits_type::eof()) override
+    int overflow(int c = traits_type::eof()) override {
+        if ( c != traits_type::eof()) {
+            if ( lines > 80 ) {
+                get_prompt();
+                flush ();
+            }
+            else
+                return c;
+        }
+    }
+
+    void intercept_chars( char c) {
+        put_into_our_buffer( c );
+        if ( lines > 80 ) {
+                get_prompt();
+                flush ();
+        }
+        if (end_transaction) {
+            flush_one_screen_worth ();
+        }
+    }
+    void flush_one_( char * buffer ) {
+            flush_one_screen_worth ();
+        cout << buffer;
+    }
+
+
+
+
+
+    underflow() override();
+    sync() override();
+    sputn();
+
+private:
+        std::basic_streambuf<char> * my_buffer;
 };
+
 //PaginatorCout2 cout2 {};
 //std::ostream               		cout4;
 //extern std::basic_ostream< char  > cout5;
 //auto my_streambuf_of_type_char_ptr { cout.rdbuf() };
 //std::basic_streambuf< char >*  	my_streambuf_ptr2 { my_streambuf_of_type_char_ptr };
-
-
-
-
-
-
 
 std::basic_streambuf< char >*  	my_streambuf_ptr { cout.rdbuf() };
 std::basic_ostream< char > 		cout3 { my_streambuf_ptr };
