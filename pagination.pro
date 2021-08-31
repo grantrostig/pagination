@@ -4,11 +4,13 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += \
-    main.cpp
+    main.cpp \
+    pcout.cpp
 
 HEADERS += \
     doc/paginator.h \
-    main.h
+    main.h \
+    pcout.h
 
 QMAKE_CXXFLAGS += \
         -std=c++2a 		\

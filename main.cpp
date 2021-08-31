@@ -16,6 +16,8 @@
 #include <ios>
 #include <algorithm>
 #include <cstdlib>
+
+#include <pcout.h>
 using std::cout, std::cin, std::cerr, std::endl;
 using Character 				= char;			// should be internationalized
 using Word 						= std::string;  // = Character, need struct with: "is_hypthenateable" or { int offset_of_hyphen_insertion_for_print //if > 0 }
@@ -74,7 +76,7 @@ public:
 };
 
 
-class PaginatorCout {
+/* class PaginatorCout {
 public:
     //static std::ostring 	my_cout;
     static decltype (std::cout) my_cout;
@@ -130,10 +132,10 @@ public:
         auto prompt_desired  = diu.prompt.prompt_desired;
         auto prompt_min  	 = diu.prompt.prompt_min;
 
-        /* PLEASE IGNORE commented code, it requires re-work.
-         * currently I just return a MAGIC number for sizing.
-         * todo: I know below is ugly, any ideas on how to make more attractive?
-         * calculations need to be redone with lines_ceil
+        // PLEASE IGNORE commented code, it requires re-work.
+         // currently I just return a MAGIC number for sizing.
+         // todo: I know below is ugly, any ideas on how to make more attractive?
+         // calculations need to be redone with lines_ceil
         std::div_t p = std::div( 90, 24);
         int lines_ceil = p.quot + ( p.rem == 0 ? 0 : 1);
 
@@ -151,7 +153,7 @@ public:
              return  { content_min.content    , content_min.dimension.lines_min,     2};
         //return  	 { content_min.content     + prompt_min,     content_min.dimension.lines_min,     3};
         return  	 { content_min.content  + prompt_min,     content_min.dimension.lines_min,     3};
-        */
+        //
         return  	 { content_desired.content, "::Paginator says ENTER to continue, or [B]ack::", 1, 40, 3};
     }
     InteractionResult output_display_info_unit ( DisplayInfoUnit display_info_unit ) {
@@ -186,21 +188,23 @@ public:
         return 0;
     }
 };
-
-PaginatorCout 						pcout 						{};
+*/
+/*
 ComputerDisplay 					Paginator::display 			{};  //  this is a DEFINITION, required here for a static in a class only?
 PromptRawUnit						Paginator::prompt_raw_unit  {}; // need to preserve between class invocations.
 //bool 								Paginator::is_new_session {true};
 PaginatorSessionHistory 			Paginator::history 		{};
 PaginatorSessionHistory::iterator	Paginator::history_itr 	{Paginator::history.end()};
+*/
 
 
-std::ostream & operator<< ( std::ostream & os, ComputerDisplay const & cd ) {
+/* std::ostream & operator<< ( std::ostream & os, ComputerDisplay const & cd ) {
     os << "operator<<:" << cd.capactity.num_chars << ", " << cd.currently_used.num_chars << endl;
     return os;
 };
+*/
 
-template <typename CharT, typename traits, typename T>
+/* template <typename CharT, typename traits, typename T>
 std::basic_ostringstream<CharT,traits>&&
 operator<<( std::basic_ostringstream<CharT,traits> && out, const T& t) {
   static_cast<std::basic_ostream< CharT, traits > &>(out) << t;
@@ -220,45 +224,41 @@ S&& operator<<( S && out, const T& t) {
   static_cast<std::basic_ostream< typename S::char_type, typename S::traits_type > &>(out) << t;
   return std::move(out);
 }
-class Pcout_streambuf : public std::streambuf {
+*/
+
+/* class Pcout_streambufjunk : public std::streambuf {
 public:
    // overflow(int_type __c = traits_type::eof()) override
     int overflow(int c = traits_type::eof()) override {
         if ( c != traits_type::eof()) {
-            if ( lines > 80 ) {
-                get_prompt();
-                flush ();
-            }
-            else
-                return c;
-        }
-    }
+//            if ( lines > 80 ) {
+//                get_prompt();
+//                flush ();
+//            }
+            //else
+                //return c;
+//        }
+//    }
 
-    void intercept_chars( char c) {
-        put_into_our_buffer( c );
-        if ( lines > 80 ) {
-                get_prompt();
-                flush ();
-        }
-        if (end_transaction) {
-            flush_one_screen_worth ();
-        }
-    }
-    void flush_one_( char * buffer ) {
-            flush_one_screen_worth ();
-        cout << buffer;
-    }
-
-
-
-
-
-    underflow() override();
-    sync() override();
-    sputn();
-
-private:
-        std::basic_streambuf<char> * my_buffer;
+//    void intercept_chars( char c) {
+//        put_into_our_buffer( c );
+//        if ( lines > 80 ) {
+//                get_prompt();
+//                flush ();
+//        }
+//        if (end_transaction) {
+//            flush_one_screen_worth ();
+//        }
+//    }
+//    void flush_one_( char * buffer ) {
+//            flush_one_screen_worth ();
+//        cout << buffer;
+//    sputn();
+//private:
+//        std::basic_streambuf<char> * my_buffer;
+//};
+}
+}
 };
 
 //PaginatorCout2 cout2 {};
@@ -266,28 +266,17 @@ private:
 //extern std::basic_ostream< char  > cout5;
 //auto my_streambuf_of_type_char_ptr { cout.rdbuf() };
 //std::basic_streambuf< char >*  	my_streambuf_ptr2 { my_streambuf_of_type_char_ptr };
-
 std::basic_streambuf< char >*  	my_streambuf_ptr { cout.rdbuf() };
 std::basic_ostream< char > 		cout3 { my_streambuf_ptr };
-
-//int f( long double & i )
-int f( long double && i )
-{ return i*2; };
+*/
 
 int main() {
-    // const long double & i = 6.0;
-    // long double & i = 6.0l;
-    long double x = 7l;
-    // long double & i = x;
-    f(6.0l);
-    long double q;
-    f(i);
-    f(q);
+    pcout << "hello world.";
 
-    cout3 << "hello\n";
+    /* cout3 << "hello\n";
 
-    ComputerDisplay cd3;
-    cout << cd3 << std::endl;
+    //ComputerDisplay cd3;
+    //cout << cd3 << std::endl;
 
     Paginator 			paginator {};
     InteractionResult 	result;
@@ -302,7 +291,6 @@ int main() {
         {{"$$$  "}, 					{5,0}},
         {{"$  "}, 					    {3,0}}
     };
-    */
     OutPhrase 			out_1 	{ {"Your bank balance is: $50."} };
     PromptPhrase 		pagin_1 {
         {"IOPhrase::Press [ENTER] to continue:"},
@@ -311,8 +299,8 @@ int main() {
         //{"IOPhrase::$  "}
     };
     DisplayInfoUnit 	display_info_unit 	{ out_1, pagin_1 };
-
-    for ( int i = 0; i < 30; ++i ) {
+*/
+/* for ( int i = 0; i < 30; ++i ) {
         std::ostringstream oss {};
         //auto q3 { oss << "my text, followed by my number: " << i << std::endl} ;
         oss << "my text, followed by my number: " << i << std::endl;
@@ -323,12 +311,11 @@ int main() {
         //display_info_unit.out_phrase.content_desired.content = ( oss << "my text, followed by my number: " << 42.0 << std::endl).rdbuf() ;
         //display_info_unit.out_phrase.content_desired.content = ((std::ostringstream)( oss << "my text, followed by my number: " << 42.0 << std::endl )).str();
 
-        /* this is how I would like to replace above lines is "pcout".
+        // this is how I would like to replace above lines is "pcout".
 
-        pcout 			<< clear_screen();  // OR pcout.clear_screen();
-        pcout 			<< "my text, followed by my number: " << 42.0 << std::endl;
-        switch (pcout.result)  // OR // next line
-        */
+        //pcout 			<< clear_screen();  // OR pcout.clear_screen();
+        //pcout 			<< "my text, followed by my number: " << 42.0 << std::endl;
+        //switch (pcout.result)  // OR // next line
 
         result = paginator.output_display_info_unit( display_info_unit );
     }
@@ -337,7 +324,7 @@ int main() {
     case 1: cout << "stop_current_operation by user request\n"; break;
     case 2: cout << "quit_program_immediately by user request\n"; break;
     }
-
+*/
     /* playing with invalid iterators
     std::vector<int> vec {0,1,2,3};
     //std::list<int> vec {0,1,2,3};
@@ -360,6 +347,5 @@ int main() {
     advance(itr,1);
     cout << *itr <<std::endl;
     */
-
     cout << "###\n";
 }
